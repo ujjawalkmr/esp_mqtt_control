@@ -3,6 +3,7 @@
 #include "wifi_manager.h"
 #include "web_server.h"
 #include "preferences_manager.h"
+#include "mqtt_manager.h"
 #include <WiFi.h>
 
 
@@ -30,11 +31,16 @@ void setup() {
     // Read saved credentials
     // ---------------------------------------------
 
-    String savedSSID =
-        getSavedSSID();
+    // String savedSSID =
+    //     getSavedSSID();
+
+    // String savedPassword =
+    //     getSavedPassword();
+ String savedSSID =
+       WIFI_SSID;
 
     String savedPassword =
-        getSavedPassword();
+        WIFI_PASSWORD;
 
 
     // ---------------------------------------------
@@ -74,6 +80,11 @@ void setup() {
             Serial.println(
                 WiFi.localIP()
             );
+            // Setup MQTT
+    setupMQTT();
+
+    // Connect MQTT
+    reconnectMQTT();
 
             return;
         }
@@ -113,5 +124,21 @@ void setup() {
 
 void loop() {
 
-    handleWebServer();
+   // handleWebServer();
+     // Keep MQTT connection alive
+
+    mqttLoop();
+
+
+    // Publish every 5 seconds
+
+    static unsigned long lastPublish = 0;
+
+
+    if (millis() - lastPublish >= 60000)
+    {
+        lastPublish = millis();
+
+        publishDeviceData();
+    }
 }
